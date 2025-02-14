@@ -7,6 +7,12 @@ import { fetchMessages, getallEvenstDetail, sendMessage } from "./firebase/fires
 import { getOpenRouteServiceRoute } from "./components/getshortesturl";
 import { useAuth } from "./firebase/AuthContext";
 
+const formatTime = (startTime, endTime) => {
+  return `${new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+};
+
+const isEventOpen = (endTime) => new Date() < new Date(endTime);
+
 const exampleData = [
   { 
     id: "1",
@@ -19,7 +25,7 @@ const exampleData = [
     tags: ["Tech Expo", "Tech Expo IITGN"],
     ticketRequired: false,
     sender: "1"
-  }
+  },
 ];
 
 // {
@@ -50,7 +56,6 @@ const genreIcons = {
 };
 
 
-
 const MapComponent = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -68,21 +73,13 @@ const MapComponent = () => {
       setMessages(messages);
     });
   }, [])
-  
-
+ 
 
   useEffect(() => {
     maptilersdk.config.apiKey = "Vfl0UVnJBIbCh32Ps4Pl";
-
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLocation = [position.coords.longitude, position.coords.latitude];
-        initMap(userLocation);
-      },
-      () => {
-        const defaultLocation = [72.5461, 23.2167];
-        initMap(defaultLocation);
-      }
+      (position) => initMap([position.coords.longitude, position.coords.latitude]),
+      () => initMap([72.5461, 23.2167])
     );
   }, []);
 
@@ -95,6 +92,7 @@ const MapComponent = () => {
     });
 
     map.addControl(new maptilersdk.NavigationControl(), "top-right");
+
     setMapI(map);
 
     fetchEvents(getallEvenstDetail()).then((data) => {
@@ -133,66 +131,50 @@ const MapComponent = () => {
     map.touchZoomRotate.enable();
 
     setMapI(map);
+    setEvents(exampleData);
 
-    new maptilersdk.Marker()
-      .setLngLat([16.62662018, 49.2125578])
-      .addTo(map);
-
-    
-      if(addlocation){
-        map.on('click', (event) => {
-          const { lng, lat } = event.lngLat;
-          if(confirm(`Clicked Location:\nLatitude: ${lat}\nLongitude: ${lng}`)){
-            setAddLocation(false);
-          }
-        });
-      }
-    
-
-    
-      function showShortestPath(map, routeGeoJSON, endPoint) {
-        // If a source for the shortest path already exists, update its data.
-        if (map.getSource('shortest-path')) {
-          map.getSource('shortest-path').setData(routeGeoJSON);
-        } else {
-          // Otherwise, add a new GeoJSON source for the route.
-          map.addSource('shortest-path', {
-            type: 'geojson',
-            data: routeGeoJSON
-          });
-        }
-
-        new maptilersdk.Marker({
-            color: 'red'
-        })
-            .setLngLat(endPoint)
-            .addTo(map);
-
-        // If the route layer does not exist, add a new layer to display it.
-        if (!map.getLayer('shortest-path-layer')) {
-          map.addLayer({
-            id: 'shortest-path-layer',
-            type: 'line',
-            source: 'shortest-path',
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round'
-            },
-            paint: {
-              'line-color': 'blue', // Blue color for the shortest path
-              'line-width': 5       // Customize the line width as needed
-            }
-          });
-        }
-      }
-      
-
-    getOpenRouteServiceRoute([16.62662018, 49.2125578], [16.63662018, 49.2155578]).then(({ route, endPoint}) => {
-        if (route) {
-          showShortestPath(map, route.geometry, endPoint);
-        }
-
+    const groupedEvents = {};
+    exampleData.forEach((event) => {
+      const key = event.coordinates.join("_");
+      if (!groupedEvents[key]) groupedEvents[key] = [];
+      groupedEvents[key].push(event);
     });
+
+    const markers = [];
+
+    Object.values(groupedEvents).forEach((group) => {
+      const markerElement = document.createElement("div");
+      markerElement.className = "custom-marker";
+      markerElement.innerHTML = group.map(event => `${genreIcons[event.genre]} ${event.name}`).join("<br>");
+
+      const marker = new maptilersdk.Marker({ element: markerElement })
+        .setLngLat(group[0].coordinates)
+        .addTo(map);
+
+      marker.getElement().addEventListener("click", () => {
+        setEventOptions(group);
+        setSelectedEvent(group[0]);
+        map.flyTo({ center: group[0].coordinates, zoom: 18 });
+      });
+
+      markers.push({ marker, element: markerElement });
+    });
+
+    map.on("zoom", () => {
+      const zoomLevel = map.getZoom();
+      markers.forEach(({ element }) => {
+        element.style.display = zoomLevel > 18 || zoomLevel < 14 ? "none" : "block";
+      });
+    });
+
+    if (addLocation) {
+      map.on("click", (event) => {
+        const { lng, lat } = event.lngLat;
+        if (confirm(`Clicked Location:\nLatitude: ${lat}\nLongitude: ${lng}`)) {
+          setAddLocation(false);
+        }
+      });
+    }
   };
 
   const submitReview = () => {
@@ -220,15 +202,27 @@ const MapComponent = () => {
             <img src={selectedEvent.image} alt={selectedEvent.name} className="event-image" />
             <h2>{selectedEvent.name}</h2>
             <p><b>Location:</b> {selectedEvent.location}</p>
-            <p><b>Time:</b> {new Date(selectedEvent.time).toLocaleString()}</p>
+            <p><b>Time:</b> {formatTime(selectedEvent.startTime, selectedEvent.endTime)}</p>
             <p>{selectedEvent.description}</p>
 
+            <div
+              className="status-block"
+              style={{
+                backgroundColor: isEventOpen(selectedEvent.endTime) ? "green" : "red",
+                color: "white",
+                padding: "5px 10px",
+                borderRadius: "5px",
+                display: "inline-block",
+                fontWeight: "bold",
+              }}
+            >
+              {isEventOpen(selectedEvent.endTime) ? "Open" : "Closed"}
+            </div>
             {selectedEvent.ticketRequired ? (
               <button className="ticket-button">Buy Ticket</button>
             ) : (
               <div className="free-block">Free</div>
             )}
-
             <div className="review-section">
               <h3>Reviews</h3>
               {messages.length === 0 ? (

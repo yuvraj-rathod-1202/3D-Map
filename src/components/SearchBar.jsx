@@ -60,14 +60,27 @@ const SearchBar = ({ map, events }) => {
     }
   };
 
+  const handleClear = () => {
+    setQuery("");
+    setSuggestions([]);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && suggestions.length > 0) {
+      handleSelect(suggestions[0]);
+    }
+  };
+
   return (
     <div className="search-bar">
       <input
         type="text"
         value={query}
         onChange={handleSearch}
+        onKeyDown={handleKeyDown}
         placeholder="Search for a location or event..."
       />
+      {query && <button className="clear-btn" onClick={handleClear}>×</button>}
       <ul className="suggestions">
         {suggestions.map((item, index) => (
           <li key={index} onClick={() => handleSelect(item)}>
