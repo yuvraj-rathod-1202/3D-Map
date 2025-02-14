@@ -1,5 +1,5 @@
 import { app } from "./firebase.config";
-import { doc, getDoc, getFirestore, query, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebase = getFirestore(app);
@@ -28,7 +28,7 @@ const sendMessage = async (messageData) => {
 
 const fetchMessages = async () => {
     const messages = [];
-    const querySnapshot = await getDoc(collection(firebase, "messages"));
+    const querySnapshot = await getDocs(collection(firebase, "messages"));
     querySnapshot.forEach((doc) => {
         messages.push(doc.data());
     });
@@ -45,29 +45,41 @@ const onMessageUpdate = (callback) => {
 }
 
 const setEventData = async (eventData) => {
-    try{
-        await setDoc(doc(firebase, "events", eventData.id), {
-            uid: eventData.id,
-            event: eventData.event,
-            booked: [],
-            redeemed: [],
-            sender: eventData.sender,
-        });
-        const userdoc = doc(firebase, "users");
-        const q = query(userdoc, where("uid", "==", eventData.sender));
-        const doc = await getDoc(q);
-        const createdEvents = doc.data().createdEvents;
-        const contributions = doc.data().contributions;
-        createdEvents.push(eventData.id);
-        contributions+=1;
-        await setDoc(doc, {
-            createdEvents: createdEvents,
-            contributions: contributions,
-        });
-    }catch(e){
-        console.error("Error adding document: ", e);
-    }
-}
+      try{
+          const docref = doc(firebase, "events", eventData.id);
+          await setDoc(docref, {
+              uid: eventData.id,
+              name: eventData.name,
+              description: eventData.description,
+              location: eventData.location,
+              start_time: eventData.start_time,
+              end_time: eventData.end_time,
+              genre: eventData.genre,
+              tags: eventData.tags,
+              ticketRequired: eventData.ticketRequired,
+              booked: [],
+              redeemed: [],
+              sender: eventData.sender,
+          });
+          const userCollection = collection(firebase, "users");
+          const q = query(userCollection, where("uid", "==", eventData.sender));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach(async (doc) => {
+              const data = doc.data();
+              const createdEvents = data.createdEvents || [];
+              const contributions = (data.contributions || 0) + 1;
+              
+              createdEvents.push(eventData.id);
+
+              await setDoc(doc.ref, {
+                  createdEvents: createdEvents,
+                  contributions: contributions
+              }, { merge: true });
+});
+      }catch(e){
+          console.error("Error adding document: ", e);
+      }
+  }
 
 const addSchedule = async (scheduleData) => {
     try {
@@ -86,13 +98,49 @@ const addSchedule = async (scheduleData) => {
 const editEvent = async (eventData) => {
     try{
         await setDoc(doc(firebase, "events", eventData.id), {
-            event: eventData.event,
-            sender: eventData.sender,
+            uid: eventData.id,
+            name: eventData.name,
+            description: eventData.description,
+            location: eventData.location,
+            start_time: eventData.start_time,
+            end_time: eventData.end_time,
+            genre: eventData.genre,
+            tags: eventData.tags,
+            ticketRequired: eventData.ticketRequired,
+            sender: eventData.sender
         });
     }catch(e){
         console.error("Error adding document: ", e);
     }
 }
+
+const deleteEvent = async (eventData) => {
+    try{
+        await deleteDoc(doc(firebase, "events", eventData.id));
+        const q = query(doc(firebase, "users"), where("participantedEvents", "array-contains", eventData.id));
+        const querySnapshot = await getDoc(q);
+        querySnapshot.forEach(async (doc) => {
+            const participantedEvents = doc.data().participantedEvents;
+            participantedEvents.remove(eventData.id);
+            await setDoc(doc, {
+                participantedEvents: participantedEvents,
+            });
+        });
+    }catch(e){
+        console.error("Error adding document: ", e);
+    }
+}
+
+const getallEvenstDetail = async () => {
+    try {
+        const querySnapshot = await getDocs(collection(firebase, "events")); // Pass a valid CollectionReference
+        const events = querySnapshot.docs.map(doc => doc.data()); // Using map() for cleaner code
+        return events;
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        return []; // Return empty array in case of error
+    }
+};
 
 const setImage = async (image) => {
     const storageRef = ref(storage, `images/${image.name}`);
@@ -198,3 +246,40 @@ const Leaderboard = async () => {
     });
     return leaderboard;
 }
+
+const addBarrier = async (barrierData) => {
+    try {
+        await setDoc(doc(firebase, "barriers", barrierData.id), {
+            uid: barrierData.id,
+            barrier: barrierData.barrier,
+            count: 0,
+            sender: barrierData.sender,
+        });
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
+
+const barrierCountinc = async (barrierData) => {
+    const barrierdoc = doc(firebase, "barriers");
+    const q = query(barrierdoc, where("uid", "==", barrierData.id));
+    const doc = await getDoc(q);
+    const count = doc.data().count;
+    count+=1;
+    await setDoc(doc, {
+        count: count,
+    });
+}
+
+const barrierCountdec = async (barrierData) => {
+    const barrierdoc = doc(firebase, "barriers");
+    const q = query(barrierdoc, where("uid", "==", barrierData.id));
+    const doc = await getDoc(q);
+    const count = doc.data().count;
+    count-=1;
+    await setDoc(doc, {
+        count: count,
+    });
+}
+
+export { addUser, sendMessage, fetchMessages, onMessageUpdate, setEventData, addSchedule, editEvent, deleteEvent, getallEvenstDetail, setImage, getImage, setImageData, fetchImageData, eventBookings, eventBookingsCheck, Leaderboard, addBarrier, barrierCountinc, barrierCountdec };

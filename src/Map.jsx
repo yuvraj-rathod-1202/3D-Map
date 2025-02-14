@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
-import "./MapStyles.css";
+import './MapStyles.css'
 import SearchBar from "./components/SearchBar";
+import { fetchMessages, getallEvenstDetail, sendMessage } from "./firebase/firestore";
+import { getOpenRouteServiceRoute } from "./components/getshortesturl";
+import { useAuth } from "./firebase/AuthContext";
 
 const formatTime = (startTime, endTime) => {
   return `${new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${new Date(endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
@@ -11,52 +14,47 @@ const formatTime = (startTime, endTime) => {
 const isEventOpen = (endTime) => new Date() < new Date(endTime);
 
 const exampleData = [
-  {
+  { 
+    id: "1",
     name: "Tech Expo",
     description: "Showcasing innovative projects and research.",
-    location: "IIT Gandhinagar - Central Hall",
-    coordinates: [72.6844, 23.2098],
-    image: "techexpo.jpg",
-    startTime: "2025-02-14T16:00:00",
-    endTime: "2025-02-14T19:00:00",
+    location: [72.6844, 23.2098],
+    start_time: "2025-02-15T10:00:00",
+    end_time: "2025-02-15T17:00:00",
     genre: "Technical",
     tags: ["Tech Expo", "Tech Expo IITGN"],
-    reviews: [],
     ticketRequired: false,
-  },
-  {
-    name: "AI Symposium",
-    description: "A conference on the latest AI advancements.",
-    location: "IIT Gandhinagar - Central Hall",
-    coordinates: [72.6844, 23.2098],
-    image: "aisymposium.jpg",
-    startTime: "2025-02-15T18:00:00",
-    endTime: "2025-02-15T21:00:00",
-    genre: "Educational",
-    tags: ["AI Symposium", "AI Symposium IITGN"],
-    reviews: [],
-    ticketRequired: true,
-  },
-  {
-    name: "Dance Night",
-    description: "Cultural event with live performances.",
-    location: "IIT Gandhinagar - Open Grounds",
-    coordinates: [72.686, 23.212],
-    image: "dance.jpg",
-    startTime: "2025-02-14T20:00:00",
-    endTime: "2025-02-14T23:30:00",
-    genre: "Cultural",
-    tags: ["Dance Night", "Cultural Event IITGN"],
-    reviews: [],
-    ticketRequired: false,
+    sender: "1"
   },
 ];
+
+// {
+//   name: "AI Symposium",
+//   description: "A conference on the latest AI advancements.",
+//   coordinates: [72.6844, 23.2098],
+//   image: "aisymposium.jpg",
+//   time: "2025-02-14T18:00:00",
+//   genre: "Educational",
+//   tags: ["AI Symposium", "AI Symposium IITGN"],
+//   ticketRequired: true,
+// },
+// {
+//   name: "Dance Night",
+//   description: "Cultural event with live performances.",
+//   coordinates: [72.6860, 23.2120],
+//   image: "dance.jpg",
+//   time: "2025-02-14T20:00:00",
+//   genre: "Cultural",
+//   tags: ["Dance Night", "Cultural Event IITGN"],
+//   ticketRequired: false,
+// },
 
 const genreIcons = {
   Technical: "🖥",
   Cultural: "🕺",
   Educational: "📚",
 };
+
 
 const MapComponent = () => {
   const [events, setEvents] = useState([]);
@@ -65,7 +63,17 @@ const MapComponent = () => {
   const [reviewImage, setReviewImage] = useState(null);
   const [eventOptions, setEventOptions] = useState([]);
   const [mapi, setMapI] = useState(null);
-  const [addLocation, setAddLocation] = useState(false);
+  const [addlocation, setAddLocation] = useState(false);
+  const fetchEvents = async (data) => data;
+  const [messages, setMessages] = useState([]);
+  const {currentUser} = useAuth();
+
+  useEffect(() => {
+    fetchMessages().then((messages) => {
+      setMessages(messages);
+    });
+  }, [])
+ 
 
   useEffect(() => {
     maptilersdk.config.apiKey = "Vfl0UVnJBIbCh32Ps4Pl";
@@ -84,6 +92,44 @@ const MapComponent = () => {
     });
 
     map.addControl(new maptilersdk.NavigationControl(), "top-right");
+
+    setMapI(map);
+
+    fetchEvents(getallEvenstDetail()).then((data) => {
+      console.log(data);
+      setEvents(data);
+      const groupedEvents = {};
+      data.forEach((event) => {
+        const key = event.location.join("_");
+        if (!groupedEvents[key]) groupedEvents[key] = [];
+        groupedEvents[key].push(event);
+      });
+
+      Object.values(groupedEvents).forEach((group) => {
+        const markerElement = document.createElement("div");
+        markerElement.className = "custom-marker";
+        markerElement.innerHTML = group.map(event => `${genreIcons[event.genre]} ${event.name}`).join("<br>");
+        
+        const marker = new maptilersdk.Marker({ element: markerElement })
+          .setLngLat(group[0].location)
+          .addTo(map);
+
+        marker.getElement().addEventListener("click", () => {
+          setEventOptions(group);
+          console.log(group);
+          setSelectedEvent(group[0]);
+          map.flyTo({ center: group[0].location, zoom: 18 });
+        });
+
+        map.on("zoom", () => {
+          markerElement.style.display = map.getZoom() > 14 ? "block" : "none";
+        });
+      });
+    });
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    map.touchZoomRotate.enable();
+
     setMapI(map);
     setEvents(exampleData);
 
@@ -133,13 +179,7 @@ const MapComponent = () => {
 
   const submitReview = () => {
     if (!reviewText.trim()) return;
-    setEvents((prevEvents) =>
-      prevEvents.map((event) =>
-        event.name === selectedEvent.name
-          ? { ...event, reviews: [...event.reviews, { text: reviewText, image: reviewImage }] }
-          : event
-      )
-    );
+    sendMessage({message: reviewText.trim(), sender: currentUser.uid});
     setReviewText("");
     setReviewImage(null);
   };
@@ -185,7 +225,7 @@ const MapComponent = () => {
             )}
             <div className="review-section">
               <h3>Reviews</h3>
-              {selectedEvent.reviews.length === 0 ? (
+              {messages.length === 0 ? (
                 <p>No reviews yet.</p>
               ) : (
                 selectedEvent.reviews.map((review, index) => (
@@ -206,4 +246,4 @@ const MapComponent = () => {
   );
 };
 
-export default MapComponent;
+export default MapComponent
