@@ -179,7 +179,7 @@ const MapComponent = () => {
 
   const submitReview = () => {
     if (!reviewText.trim()) return;
-    sendMessage({message: reviewText.trim(), sender: currentUser.uid});
+    sendMessage({message: reviewText.trim(), sender: "1"});
     setReviewText("");
     setReviewImage(null);
   };

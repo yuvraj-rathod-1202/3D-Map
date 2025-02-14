@@ -12,7 +12,6 @@ body {
 }
 
 .event-sidebar {
-  position: fixed;
   top: 0;
   left: -350px;
   width: 350px;
@@ -21,7 +20,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  padding: 0px;
+  padding: 20px;
   box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
   transform: translateX(0);
   transition: left 0.3s ease-in-out;
@@ -169,14 +168,4 @@ button:hover {
 
 .ticket-button:hover {
   background: darkred;
-}
-
-textarea {
-  resize: none; /* Prevent resizing */
-  width: 90%; /* Ensure full width */
-  height: 40px; /* Set a fixed height */
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
 }

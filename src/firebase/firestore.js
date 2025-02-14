@@ -17,7 +17,7 @@ const addUser = async (user) => {
 
 const sendMessage = async (messageData) => {
     try {
-        await setDoc(doc(firebase, "messages", messageData.id), {
+        await setDoc(doc(firebase, "messages", messageData.sender), {
             message: messageData.message,
             sender: messageData.sender,
         });
