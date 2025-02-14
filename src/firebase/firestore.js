@@ -44,6 +44,41 @@ const onMessageUpdate = (callback) => {
 
 }
 
+const setEventData = async (eventData) => {
+    try{
+        await setDoc(doc(firebase, "events", eventData.id), {
+            event: eventData.event,
+            sender: eventData.sender,
+        });
+    }catch(e){
+        console.error("Error adding document: ", e);
+    }
+}
+
+const addSchedule = async (scheduleData) => {
+    try {
+        await setDoc(doc(firebase, "schedules", scheduleData.id), {
+            schedule: scheduleData.schedule,
+            sender: scheduleData.sender,
+        });
+        scheduleData.schedule.forEach((event) => {
+            setEventData(event);
+        });
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
+}
+
+const editEvent = async (eventData) => {
+    try{
+        await setDoc(doc(firebase, "events", eventData.id), {
+            event: eventData.event,
+            sender: eventData.sender,
+        });
+    }catch(e){
+        console.error("Error adding document: ", e);
+    }
+}
 
 const setImagedata = async (image) => {
     const storageRef = ref(storage, `images/${image.name}`);
