@@ -49,7 +49,10 @@ const genreIcons = {
   Educational: "📚",
 };
 
+
 const fetchEvents = async (data) => data;
+    const [mapi, setMapI] = useState(null);
+    const [addlocation, setAddLocation] = useState(false);
 
 const MapComponent = () => {
   const [mapInstance, setMapInstance] = useState(null);
@@ -113,6 +116,71 @@ const MapComponent = () => {
           markerElement.style.display = map.getZoom() > 14 ? "block" : "none";
         });
       });
+
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    map.touchZoomRotate.enable();
+
+    setMapI(map);
+
+    new maptilersdk.Marker()
+      .setLngLat([16.62662018, 49.2125578])
+      .addTo(map);
+
+    
+      if(addlocation){
+        map.on('click', (event) => {
+          const { lng, lat } = event.lngLat;
+          if(confirm(`Clicked Location:\nLatitude: ${lat}\nLongitude: ${lng}`)){
+            setAddLocation(false);
+          }
+        });
+      }
+    
+
+    
+      function showShortestPath(map, routeGeoJSON, endPoint) {
+        // If a source for the shortest path already exists, update its data.
+        if (map.getSource('shortest-path')) {
+          map.getSource('shortest-path').setData(routeGeoJSON);
+        } else {
+          // Otherwise, add a new GeoJSON source for the route.
+          map.addSource('shortest-path', {
+            type: 'geojson',
+            data: routeGeoJSON
+          });
+        }
+
+        new maptilersdk.Marker({
+            color: 'red'
+        })
+            .setLngLat(endPoint)
+            .addTo(map);
+
+        // If the route layer does not exist, add a new layer to display it.
+        if (!map.getLayer('shortest-path-layer')) {
+          map.addLayer({
+            id: 'shortest-path-layer',
+            type: 'line',
+            source: 'shortest-path',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': 'blue', // Blue color for the shortest path
+              'line-width': 5       // Customize the line width as needed
+            }
+          });
+        }
+      }
+      
+
+    getOpenRouteServiceRoute([16.62662018, 49.2125578], [16.63662018, 49.2155578]).then(({ route, endPoint}) => {
+        if (route) {
+          showShortestPath(map, route.geometry, endPoint);
+        }
+
     });
   };
 

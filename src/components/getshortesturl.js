@@ -17,7 +17,7 @@ export const getOpenRouteServiceRoute = async (start, end) => {
       if (data.features && data.features.length > 0) {
         // The route is contained in the first feature's geometry
         const route = data.features[0];
-        console.log('OpenRouteService route:', route);
+        // console.log('OpenRouteService route:', route);
         return { route, endPoint: end};
       } else {
         console.error('No routes found');

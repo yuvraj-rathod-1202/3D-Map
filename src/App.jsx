@@ -1,10 +1,13 @@
 import React from "react";
 import MapComponent from "./Map";
+import AuthProvider from "./firebase/AuthContext";
 
 const App = () => {
   return(
     <>
-      <MapComponent />
+      {/* <AuthProvider> */}
+        <MapComponent />
+      {/* </AuthProvider> */}
     </>
   )
 }
