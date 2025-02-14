@@ -94,12 +94,12 @@ const editEvent = async (eventData) => {
     }
 }
 
-const setImagedata = async (image) => {
+const setImage = async (image) => {
     const storageRef = ref(storage, `images/${image.name}`);
     await uploadBytes(storageRef, image);
 }
 
-const getImageData = async (imageName) => {
+const getImage = async (imageName) => {
     const storageRef = ref(storage, `images/${imageName}`);
     const url = await getDownloadURL(storageRef);
     return url;
@@ -198,4 +198,3 @@ const Leaderboard = async () => {
     });
     return leaderboard;
 }
-

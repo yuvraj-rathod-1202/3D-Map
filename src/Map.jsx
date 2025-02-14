@@ -9,6 +9,7 @@ import SearchBar from "./components/SearchBar";
 const MapComponent = () => {
 
     const [mapi, setMapI] = useState(null);
+    const [addlocation, setAddLocation] = useState(false);
 
 
   useEffect(() => {
@@ -32,6 +33,17 @@ const MapComponent = () => {
     new maptilersdk.Marker()
       .setLngLat([16.62662018, 49.2125578])
       .addTo(map);
+
+    
+      if(addlocation){
+        map.on('click', (event) => {
+          const { lng, lat } = event.lngLat;
+          if(confirm(`Clicked Location:\nLatitude: ${lat}\nLongitude: ${lng}`)){
+            setAddLocation(false);
+          }
+        });
+      }
+    
 
     
       function showShortestPath(map, routeGeoJSON, endPoint) {

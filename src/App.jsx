@@ -5,9 +5,9 @@ import AuthProvider from "./firebase/AuthContext";
 const App = () => {
   return(
     <>
-      <AuthProvider>
+      {/* <AuthProvider> */}
         <MapComponent />
-      </AuthProvider>
+      {/* </AuthProvider> */}
     </>
   )
 }
