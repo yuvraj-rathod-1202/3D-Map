@@ -1,13 +1,14 @@
-import { useEffect } from "react";
-import L from 'leaflet';
+import { useEffect, useState } from "react";
+import L, { map } from 'leaflet';
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import "./MapStyles.css";
 import { getOpenRouteServiceRoute } from "./components/getshortesturl";
+import SearchBar from "./components/SearchBar";
 
 const MapComponent = () => {
 
-    
+    const [mapi, setMapI] = useState(null);
 
 
   useEffect(() => {
@@ -19,35 +20,19 @@ const MapComponent = () => {
       center: [16.62662018, 49.2125578],
       zoom: 14
     });
+    
 
     map.addControl(new maptilersdk.NavigationControl(), "top-right");
     map.scrollZoom.enable();
     map.dragPan.enable();
     map.touchZoomRotate.enable();
 
+    setMapI(map);
+
     new maptilersdk.Marker()
       .setLngLat([16.62662018, 49.2125578])
       .addTo(map);
 
-      const displayRouteOnMap = (route, map) => {
-        // Ensure the route has a geometry in GeoJSON format
-        if (!route.geometry) {
-          console.error('Route geometry not available');
-          return;
-        }
-      
-        // Create a GeoJSON layer for the route
-        const geoJsonLayer = L.geoJSON(route.geometry, {
-          style: {
-            color: 'blue',
-            weight: 4,
-            opacity: 0.7
-          }
-        }).addTo(map);
-      
-        // Adjust the map view to fit the route
-        map.fitBounds(geoJsonLayer.getBounds());
-      };
     
       function showShortestPath(map, routeGeoJSON, endPoint) {
         // If a source for the shortest path already exists, update its data.
@@ -97,7 +82,11 @@ const MapComponent = () => {
 
     
 
-  return <div id="map"></div>;
+  return (
+    <>
+    <SearchBar map={mapi} />
+    <div id="map"></div>
+    </>);
 };
 
 export default MapComponent;
