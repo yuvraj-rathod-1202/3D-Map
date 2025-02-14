@@ -28,7 +28,7 @@ const sendMessage = async (messageData) => {
 
 const fetchMessages = async () => {
     const messages = [];
-    const querySnapshot = await getDocs(collection(firebase, "messages"));
+    const querySnapshot = await getDoc(collection(firebase, "messages"));
     querySnapshot.forEach((doc) => {
         messages.push(doc.data());
     });
@@ -129,7 +129,7 @@ const setImageData = async (imageData) => {
 
 const fetchImageData = async () => {
     const images = [];
-    const querySnapshot = await getDocs(collection(firebase, "imageData"));
+    const querySnapshot = await getDoc(collection(firebase, "imageData"));
     querySnapshot.forEach((doc) => {
         images.push(doc.data());
     });
@@ -187,4 +187,15 @@ const eventBookingsCheck = async (eventData) => {
     }
 }
 
+
+const Leaderboard = async () => {
+    const userdoc = doc(firebase, "users");
+    const q = query(userdoc, orderBy("contributions", "desc"));
+    const querySnapshot = await getDoc(q);
+    const leaderboard = [];
+    querySnapshot.forEach((doc) => {
+        leaderboard.push(doc.data());
+    });
+    return leaderboard;
+}
 
