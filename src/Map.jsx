@@ -167,7 +167,7 @@ const MapComponent = () => {
       });
     });
 
-    if (addLocation) {
+    if (addlocation) {
       map.on("click", (event) => {
         const { lng, lat } = event.lngLat;
         if (confirm(`Clicked Location:\nLatitude: ${lat}\nLongitude: ${lng}`)) {
@@ -179,7 +179,7 @@ const MapComponent = () => {
 
   const submitReview = () => {
     if (!reviewText.trim()) return;
-    sendMessage({message: reviewText.trim(), sender: "1"});
+    sendMessage({message: reviewText.trim(), sender: "2"});
     setReviewText("");
     setReviewImage(null);
   };
@@ -202,7 +202,7 @@ const MapComponent = () => {
             <img src={selectedEvent.image} alt={selectedEvent.name} className="event-image" />
             <h2>{selectedEvent.name}</h2>
             <p><b>Location:</b> {selectedEvent.location}</p>
-            <p><b>Time:</b> {formatTime(selectedEvent.startTime, selectedEvent.endTime)}</p>
+            <p><b>Time:</b> {formatTime(selectedEvent.start_time, selectedEvent.end_time)}</p>
             <p>{selectedEvent.description}</p>
 
             <div
@@ -228,10 +228,10 @@ const MapComponent = () => {
               {messages.length === 0 ? (
                 <p>No reviews yet.</p>
               ) : (
-                selectedEvent.reviews.map((review, index) => (
+                messages.map((review, index) => (
                   <div key={index} className="review">
-                    <p>{review.text}</p>
-                    {review.image && <img src={review.image} alt="Review" className="review-image" />}
+                    <p>{review.message}</p>
+                    {/* {review.image && <img src={review.image} alt="Review" className="review-image" />} */}
                   </div>
                 ))
               )}
