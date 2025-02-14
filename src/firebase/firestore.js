@@ -1,5 +1,5 @@
 import { app } from "./firebase.config";
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, query, setDoc } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebase = getFirestore(app);
@@ -105,4 +105,24 @@ const fetchImageData = async () => {
         images.push(doc.data());
     });
     return images;
+}
+
+
+const eventBookings = async (eventData) => {
+    try{
+        await setDoc(doc(firebase, "eventBookings", eventData.id), {
+            event: eventData.event,
+            booker: eventData.booker,
+        });
+        const userdoc = doc(firebase, "users");
+        const q = query(userdoc, where("uid", "==", eventData.booker));
+        const doc = await getDoc(q);
+        const participantedEvents = doc.data().participantedEvents;
+        participantedEvents.push(eventData.id);
+        await setDoc(doc, {
+            participantedEvents: participantedEvents,
+        });
+    }catch(e){
+        console.error("Error adding document: ", e);
+    }
 }
