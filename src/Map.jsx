@@ -3,7 +3,7 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import './MapStyles.css'
 import SearchBar from "./components/SearchBar";
-import { fetchMessages, getallEvenstDetail, sendMessage } from "./firebase/firestore";
+import { fetchMessages, getallEvenstDetail, sendMessage, setImage } from "./firebase/firestore";
 import { getOpenRouteServiceRoute } from "./components/getshortesturl";
 import { useAuth } from "./firebase/AuthContext";
 
@@ -50,9 +50,9 @@ const exampleData = [
 // },
 
 const genreIcons = {
-  Technical: "🖥",
-  Cultural: "🕺",
-  Educational: "📚",
+  technical: "🖥",
+  cultural: "🕺",
+  educational: "📚",
 };
 
 
@@ -72,7 +72,7 @@ const MapComponent = () => {
     fetchMessages().then((messages) => {
       setMessages(messages);
     });
-  }, [])
+  })
  
 
   useEffect(() => {
@@ -179,7 +179,8 @@ const MapComponent = () => {
 
   const submitReview = () => {
     if (!reviewText.trim()) return;
-    sendMessage({message: reviewText.trim(), sender: "2"});
+    sendMessage({message: reviewText.trim(), sender: currentUser?.uid});
+    setImage(crypto.randomUUID() ,reviewImage);
     setReviewText("");
     setReviewImage(null);
   };

@@ -1,5 +1,5 @@
 import { app } from "./firebase.config";
-import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, getFirestore, onSnapshot, query, setDoc, where } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebase = getFirestore(app);
@@ -8,7 +8,14 @@ const storage = getStorage(app);
 const addUser = async (user) => {
     try {
         await setDoc(doc(firebase, "users", user.uid), {
-            user
+            uid: user.uid,
+            email: user.email,
+            username: user.displayName,
+            photo: user.photoURL,
+            createdEvents: [],
+            createdImages: [],
+            participantedEvents: [],
+            contributions: 0,
         });
     } catch (e) {
         console.error("Error adding document: ", e);
@@ -38,17 +45,16 @@ const fetchMessages = async () => {
 const onMessageUpdate = (callback) => {
     const querySnapshot = onSnapshot(collection(firebase, "messages"), (snapshot) => {
         fetchMessages().then((messages) => {
-            return messages;
+            return snapshot(messages);
         });
     });
 
 }
 
-const setEventData = async (eventData) => {
+const setEventDatatoDB = async (eventData) => {
       try{
-          const docref = doc(firebase, "events", eventData.id);
-          await setDoc(docref, {
-              uid: eventData.id,
+          await setDoc(doc(firebase, "events", eventData.uid), {
+              uid: eventData.uid,
               name: eventData.name,
               description: eventData.description,
               location: eventData.location,
@@ -69,7 +75,7 @@ const setEventData = async (eventData) => {
               const createdEvents = data.createdEvents || [];
               const contributions = (data.contributions || 0) + 1;
               
-              createdEvents.push(eventData.id);
+              createdEvents.push(eventData.uid);
 
               await setDoc(doc.ref, {
                   createdEvents: createdEvents,
@@ -142,8 +148,8 @@ const getallEvenstDetail = async () => {
     }
 };
 
-const setImage = async (image) => {
-    const storageRef = ref(storage, `images/${image.name}`);
+const setImage = async (name, image) => {
+    const storageRef = ref(storage, `images/${name}`);
     await uploadBytes(storageRef, image);
 }
 
@@ -282,4 +288,4 @@ const barrierCountdec = async (barrierData) => {
     });
 }
 
-export { addUser, sendMessage, fetchMessages, onMessageUpdate, setEventData, addSchedule, editEvent, deleteEvent, getallEvenstDetail, setImage, getImage, setImageData, fetchImageData, eventBookings, eventBookingsCheck, Leaderboard, addBarrier, barrierCountinc, barrierCountdec };
+export { addUser, sendMessage, fetchMessages, onMessageUpdate, setEventDatatoDB, addSchedule, editEvent, deleteEvent, getallEvenstDetail, setImage, getImage, setImageData, fetchImageData, eventBookings, eventBookingsCheck, Leaderboard, addBarrier, barrierCountinc, barrierCountdec };
