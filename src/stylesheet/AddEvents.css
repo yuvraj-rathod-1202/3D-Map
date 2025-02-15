@@ -1,0 +1,256 @@
+:root {
+    --primary-blue: #2563eb;
+    --secondary-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --light-bg: #f8fafc;
+    --dark-text: #1e293b;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+    color: var(--dark-text);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.98);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: var(--primary-blue);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+
+/* Form Styles */
+#eventForm {
+    background: var(--light-bg);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-top: 1.5rem;
+    border: 2px solid var(--primary-blue);
+}
+
+#eventForm label {
+    display: block;
+    margin: 1rem 0 0.5rem;
+    font-weight: 500;
+    color: var(--dark-text);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.ticket-fieldset {
+    border: 2px solid #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 2rem;
+    background: #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-group label:hover {
+    background: #cbd5e1;
+}
+
+input[type="radio"] {
+    width: auto;
+    margin: 0;
+    accent-color: var(--primary-blue);
+}
+
+/* Buttons */
+.add-btn {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: block;
+    margin: 0 auto;
+    transition: transform 0.2s ease;
+}
+
+.add-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.location-btn, .submit-btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.location-btn {
+    background: #64748b;
+    color: white;
+}
+
+.location-btn:hover {
+    background: #475569;
+}
+
+.submit-btn {
+    background: var(--accent-green);
+    color: white;
+}
+
+.submit-btn:hover {
+    background: #059669;
+}
+
+/* Event List */
+#eventList {
+    margin-top: 2rem;
+}
+
+.event-item {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 1.5rem;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.event-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.event-content {
+    flex-grow: 1;
+}
+
+.event-item h3 {
+    margin: 0 0 0.5rem;
+    color: var(--primary-blue);
+    font-size: 1.25rem;
+}
+
+.ticket-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.ticket-yes {
+    background: var(--accent-green);
+    color: white;
+}
+
+.ticket-no {
+    background: var(--accent-red);
+    color: white;
+}
+
+.event-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+    color: #64748b;
+}
+
+.event-description {
+    background: var(--light-bg);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    color: #475569;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .event-item {
+        flex-direction: column;
+    }
+    
+    .event-icon {
+        width: 100%;
+        height: 150px;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
