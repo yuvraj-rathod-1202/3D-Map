@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../stylesheet/SeachBar.css";
+import { Link } from "react-router-dom";
 
 const SearchBar = ({ map, events }) => {
   const [query, setQuery] = useState("");
@@ -72,7 +73,7 @@ const SearchBar = ({ map, events }) => {
   };
 
   return (
-    <div className="search-bar">
+    <div className="search-bar flex flex-row">
       <input
         type="text"
         value={query}
@@ -88,6 +89,14 @@ const SearchBar = ({ map, events }) => {
           </li>
         ))}
       </ul>
+      <div>
+        <Link to="/addevents">
+      <button className="search-btn">Add Event </button>
+      </Link>
+      <Link to="/login">
+      <button className="search-btn">Login</button>
+      </Link>
+      </div>
     </div>
   );
 };

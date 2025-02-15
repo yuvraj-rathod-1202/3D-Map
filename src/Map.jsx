@@ -80,7 +80,6 @@ const MapComponent = () => {
     });
 
     map.addControl(new maptilersdk.NavigationControl(), "top-right");
-    setMapI(map);
 
     // Add a live location marker using the current center.
     userMarkerRef.current = new maptilersdk.Marker({ color: "blue" })
@@ -124,6 +123,7 @@ const MapComponent = () => {
     map.scrollZoom.enable();
     map.dragPan.enable();
     map.touchZoomRotate.enable();
+    setMapI(map);
 
     // Additional marker code for grouped events (if needed)...
     const extraGroupedEvents = {};
@@ -175,33 +175,50 @@ const MapComponent = () => {
   };
 
   function showShortestPath(map, routeGeoJSON, endPoint) {
-    if (map.getSource("shortest-path")) {
-      map.getSource("shortest-path").setData(routeGeoJSON);
+    // If a source for the shortest path already exists, update its data.
+    if (map.getSource('shortest-path')) {
+      map.getSource('shortest-path').setData(routeGeoJSON);
     } else {
-      map.addSource("shortest-path", {
-        type: "geojson",
-        data: routeGeoJSON,
+      // Otherwise, add a new GeoJSON source for the route.
+      map.addSource('shortest-path', {
+        type: 'geojson',
+        data: routeGeoJSON
       });
     }
-    new maptilersdk.Marker({ color: "red" })
-      .setLngLat(endPoint)
-      .addTo(map);
-    if (!map.getLayer("shortest-path-layer")) {
+    new maptilersdk.Marker({
+        color: 'red'
+    })
+        .setLngLat(endPoint)
+        .addTo(map);
+    // If the route layer does not exist, add a new layer to display it.
+    if (!map.getLayer('shortest-path-layer')) {
       map.addLayer({
-        id: "shortest-path-layer",
-        type: "line",
-        source: "shortest-path",
+        id: 'shortest-path-layer',
+        type: 'line',
+        source: 'shortest-path',
         layout: {
-          "line-join": "round",
-          "line-cap": "round",
+          'line-join': 'round',
+          'line-cap': 'round'
         },
         paint: {
-          "line-color": "blue",
-          "line-width": 5,
-        },
+          'line-color': 'blue', // Blue color for the shortest path
+          'line-width': 5       // Customize the line width as needed
+        }
       });
     }
   }
+  
+  
+
+  useEffect(() => {
+    if (mapi) {
+      getOpenRouteServiceRoute([72.5461, 23.2167], [72.5461, 23.2187]).then((data) => {
+        if (data) {
+          showShortestPath(mapi, data.geometry, [72.5461, 23.2187]);
+        }
+      });
+    }
+  }, [mapi]);
 
   return (
     <>

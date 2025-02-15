@@ -1,5 +1,6 @@
 .search-bar {
     position: absolute;
+    flex-direction: row;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
