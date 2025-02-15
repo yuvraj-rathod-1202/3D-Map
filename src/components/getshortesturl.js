@@ -18,7 +18,7 @@ export const getOpenRouteServiceRoute = async (start, end) => {
         // The route is contained in the first feature's geometry
         const route = data.features[0];
         console.log('OpenRouteService route:', route);
-        return { route, endPoint: end};
+        return { route, endPoint: end, startPoint: start };
       } else {
         console.error('No routes found');
         return null;

@@ -48,7 +48,6 @@ const onMessageUpdate = (callback) => {
             return snapshot(messages);
         });
     });
-
 }
 
 const setEventDatatoDB = async (eventData) => {

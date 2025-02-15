@@ -174,7 +174,7 @@ const MapComponent = () => {
     setReviewImage(null);
   };
 
-  function showShortestPath(map, routeGeoJSON, endPoint) {
+  function showShortestPath(map, routeGeoJSON, endPoint, startPoint) {
     // If a source for the shortest path already exists, update its data.
     if (map.getSource('shortest-path')) {
       map.getSource('shortest-path').setData(routeGeoJSON);
@@ -189,6 +189,12 @@ const MapComponent = () => {
         color: 'red'
     })
         .setLngLat(endPoint)
+        .addTo(map);
+
+    new maptilersdk.Marker({
+        color: 'green'
+    })
+        .setLngLat(startPoint)
         .addTo(map);
     // If the route layer does not exist, add a new layer to display it.
     if (!map.getLayer('shortest-path-layer')) {
@@ -214,7 +220,7 @@ const MapComponent = () => {
     if (mapi) {
       getOpenRouteServiceRoute([72.5461, 23.2167], [72.5461, 23.2187]).then((data) => {
         if (data) {
-          showShortestPath(mapi, data.geometry, [72.5461, 23.2187]);
+          showShortestPath(mapi, data.route.geometry,data.endPoint, data.startPoint);
         }
       });
     }
