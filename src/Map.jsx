@@ -220,7 +220,7 @@ const MapComponent = () => {
               {isEventOpen(selectedEvent.endTime) ? "Open" : "Closed"}
             </div>
             {selectedEvent.ticketRequired ? (
-              <button className="ticket-button">Buy Ticket</button>
+              <a href="https://www.district.in/" className="ticket-button">Buy Ticket</a>
             ) : (
               <div className="free-block">Free</div>
             )}
